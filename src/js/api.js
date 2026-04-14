@@ -46,15 +46,18 @@ async function callGASBackend(payload) {
 
 /**
  * Executes the bulk OU transfer via Google Apps Script.
+ * Now includes schoolDict for the backend to process email notifications correctly.
  * @param {string} targetOU - The destination Organizational Unit path.
  * @param {Array<string>} emails - Array of clean user emails.
+ * @param {Object} schoolDict - Dictionary mapping school codes to school names.
  * @returns {Promise<Object>} Response containing execution metrics and logs.
  */
-export async function executeTransfer(targetOU, emails) {
+export async function executeTransfer(targetOU, emails, schoolDict) {
     const payload = {
         action: "transfer",
         targetOU: targetOU,
-        emails: emails
+        emails: emails,
+        schoolDict: schoolDict // Disuntik ke payload untuk notifikasi e-mel
     };
 
     const response = await callGASBackend(payload);

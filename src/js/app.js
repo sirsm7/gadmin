@@ -3,6 +3,7 @@
  * @description Main application controller.
  * Enforces Strict Separation of Concerns: Connects UI manipulations with API network calls.
  * Implements business logic for data mapping, event listeners, and execution flow.
+ * Now manages globalSchoolDict for backend email notifications.
  */
 
 import * as api from './api.js';
@@ -10,6 +11,9 @@ import * as ui from './ui.js';
 
 // Constant based on the original system requirements
 const OFF_OU_PATH = "/JPN/MELAKA/OFF";
+
+// Global state to hold school name mappings for backend email notifications
+let globalSchoolDict = {};
 
 /**
  * Main Initialization sequence executed when the DOM is fully loaded.
@@ -61,6 +65,7 @@ async function loadInitialData() {
         const data = await api.getCachedDataFromSupabase();
         
         // Process and map the raw data into UI-friendly format
+        // This also populates the globalSchoolDict for email notifications
         const formattedList = mapDataForUI(data.ouList, data.kodList);
         
         // Push to UI layer
@@ -76,6 +81,7 @@ async function loadInitialData() {
 
 /**
  * Core Business Logic: Maps raw OU paths with School Codes to create user-friendly dropdown options.
+ * Populates globalSchoolDict for use in backend email notifications.
  * @param {Array<string>} ouList - Raw OrgUnitPath array.
  * @param {Array<Object>} kodList - Array of mapped school objects from Supabase.
  * @returns {Array<Object>} Array of objects { text: "Display Text", value: "Exact Path" }
@@ -92,6 +98,9 @@ function mapDataForUI(ouList, kodList) {
             }
         });
     }
+
+    // Assign to global state to be used during transfer execution
+    globalSchoolDict = codeMap;
 
     const finalOUList = [];
 
@@ -196,8 +205,8 @@ async function handleTransferExecution() {
     ui.resetLogs();
     
     try {
-        // 5. Send to GAS Backend via API Layer
-        const result = await api.executeTransfer(exactOUPath, emails);
+        // 5. Send to GAS Backend via API Layer (Passing globalSchoolDict for emails)
+        const result = await api.executeTransfer(exactOUPath, emails, globalSchoolDict);
         
         // 6. Process Results and Render to UI
         ui.updateLogCounters(result.successCount, result.errorCount);
