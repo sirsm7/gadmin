@@ -8,9 +8,9 @@
 // Konfigurasi Endpoint Utama
 const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzt9R_Ag4sPSDAWLSHEOPCGQjKtZqZCj6M8eGNy_PqgGeplWOaljNU0qQi_oQ55syks/exec";
 
-// Konfigurasi Supabase (Sila kemaskini dengan maklumat sebenar anda)
-const SUPABASE_URL = "SILA_MASUKKAN_URL_SUPABASE_ANDA_DI_SINI";
-const SUPABASE_ANON_KEY = "SILA_MASUKKAN_ANON_KEY_SUPABASE_ANDA_DI_SINI";
+// Konfigurasi Supabase (Merujuk kepada persekitaran DEV NADIM)
+const SUPABASE_URL = "https://app.tech4ag.my";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzYzMzczNjQ1LCJleHAiOjIwNzg3MzM2NDV9.vZOedqJzUn01PjwfaQp7VvRzSm4aRMr21QblPDK8AoY";
 
 // Permulaan (Initialization) Client Supabase dari CDN Global 'window'
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
