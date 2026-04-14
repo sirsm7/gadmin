@@ -6,7 +6,7 @@
  */
 
 // Konfigurasi Endpoint Utama
-const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzt9R_Ag4sPSDAWLSHEOPCGQjKtZqZCj6M8eGNy_PqgGeplWOaljNU0qQi_oQ55syks/exec";
+const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwkvWhbz_sM8THJOefS5P9PadWetXWSjj3rCcGGvlJ6nLY4LK7q6gfyT3UhLqrqmg8SpQ/exec";
 
 // Konfigurasi Supabase (Merujuk kepada persekitaran DEV NADIM)
 const SUPABASE_URL = "https://app.tech4ag.my";
