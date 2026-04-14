@@ -26,7 +26,6 @@ async function callGASBackend(payload) {
         const response = await fetch(GAS_WEB_APP_URL, {
             method: "POST",
             headers: {
-                // Using text/plain prevents complex CORS preflight issues with GAS
                 "Content-Type": "text/plain;charset=utf-8",
             },
             body: JSON.stringify(payload),
@@ -60,7 +59,6 @@ export async function executeTransfer(targetOU, emails) {
 
     const response = await callGASBackend(payload);
     
-    // Validate if the internal GAS routing threw an error
     if (response.status === "error") {
         throw new Error(response.message);
     }
@@ -87,46 +85,72 @@ export async function fetchFreshOUsFromAdmin() {
 }
 
 /**
- * Fetches cached OU paths and School Codes mapping from Supabase.
- * Does not require Auth because RLS is disabled on these specific tables.
- * @returns {Promise<Object>} Object containing both arrays.
+ * Fetches cached OU paths and joins them with existing NADIM school tables.
+ * Emulates the previous structure by creating a 'kodList' mapping internally.
+ * @returns {Promise<Object>} Object containing { ouList: [], kodList: [] }
  */
 export async function getCachedDataFromSupabase() {
     try {
-        // Run both fetches concurrently for maximum performance
-        const [ouResponse, kodResponse] = await Promise.all([
+        // Run all 3 fetches concurrently to maximize speed
+        const [ouResponse, smpidResponse, delimaResponse] = await Promise.all([
             supabase.from('gadmin_senarai_ou').select('org_unit_path').order('org_unit_path', { ascending: true }),
-            supabase.from('gadmin_senarai_kod').select('kod_sekolah, nama_sekolah, kod_ou')
+            supabase.from('smpid_sekolah_data').select('kod_sekolah, nama_sekolah'),
+            supabase.from('delima_data_sekolah').select('kod_sekolah, kod_ou')
         ]);
 
-        if (ouResponse.error) throw new Error("Gagal menarik data OU dari Supabase: " + ouResponse.error.message);
-        if (kodResponse.error) throw new Error("Gagal menarik Kod Sekolah dari Supabase: " + kodResponse.error.message);
+        // Error checking for each query
+        if (ouResponse.error) throw new Error("Gagal menarik data OU: " + ouResponse.error.message);
+        if (smpidResponse.error) throw new Error("Gagal menarik data SMPID: " + smpidResponse.error.message);
+        if (delimaResponse.error) throw new Error("Gagal menarik data DELIMA: " + delimaResponse.error.message);
 
+        // Map SMPID names for fast lookup
+        const smpidNameMap = {};
+        if (smpidResponse.data) {
+            smpidResponse.data.forEach(school => {
+                if(school.kod_sekolah) {
+                    smpidNameMap[school.kod_sekolah.trim()] = school.nama_sekolah;
+                }
+            });
+        }
+
+        // Construct the virtual 'kodList' format expected by app.js
+        const constructedKodList = [];
+        if (delimaResponse.data) {
+            delimaResponse.data.forEach(item => {
+                if (item.kod_sekolah && item.kod_ou) {
+                    const kodSek = item.kod_sekolah.trim();
+                    constructedKodList.push({
+                        kod_sekolah: kodSek,
+                        nama_sekolah: smpidNameMap[kodSek] || "NAMA SEKOLAH TIDAK DIJUMPAI",
+                        kod_ou: item.kod_ou.trim()
+                    });
+                }
+            });
+        }
+
+        // Return the exact same signature that app.js expects
         return {
             ouList: ouResponse.data.map(item => item.org_unit_path),
-            kodList: kodResponse.data
+            kodList: constructedKodList
         };
+
     } catch (error) {
-        console.error("Ralat pangkalan data Supabase:", error);
+        console.error("Ralat cantuman pangkalan data Supabase:", error);
         throw error;
     }
 }
 
 /**
  * Updates the Supabase cache with fresh OUs fetched from Google Admin.
- * Handles the logic of syncing the remote database.
  * @param {Array<string>} freshOuPaths - The latest OU paths from Admin SDK.
  * @returns {Promise<void>}
  */
 export async function syncOUsToSupabase(freshOuPaths) {
     try {
-        // Prepare payload for Supabase insertion
         const payload = freshOuPaths.map(path => ({
             org_unit_path: path
         }));
 
-        // Upsert operation to update existing or insert new without causing UNIQUE constraint errors.
-        // Assumes org_unit_path is a UNIQUE constraint in the database.
         const { error } = await supabase
             .from('gadmin_senarai_ou')
             .upsert(payload, { onConflict: 'org_unit_path' });
