@@ -3,7 +3,7 @@
  * @description Main application controller.
  * Enforces Strict Separation of Concerns: Connects UI manipulations with API network calls.
  * Implements business logic for data mapping, event listeners, and execution flow.
- * Now manages globalSchoolDict for backend email notifications.
+ * Now manages globalSchoolDict for backend email notifications and Asynchronous Batch Chunking.
  */
 
 import * as api from './api.js';
@@ -168,6 +168,7 @@ async function handleRefreshOUs() {
 
 /**
  * Handles the main execution process for transferring users.
+ * Implements Asynchronous Batch Chunking to bypass 30s network timeouts.
  */
 async function handleTransferExecution() {
     // 1. Input Extraction & Basic Validation
@@ -200,37 +201,67 @@ async function handleTransferExecution() {
     const confirmMsg = `PENGESAHAN PEMINDAHAN PUKAL\n\nJumlah Pengguna: ${emails.length}\nDestinasi: ${exactOUPath}\n\nTeruskan operasi ini?`;
     if (!confirm(confirmMsg)) return;
 
-    // 4. Execution Initialization
+    // 4. Execution Initialization & Chunking Configuration
     ui.setTransferLoadingState(true);
     ui.resetLogs();
     
-    try {
-        // 5. Send to GAS Backend via API Layer (Passing globalSchoolDict for emails)
-        const result = await api.executeTransfer(exactOUPath, emails, globalSchoolDict);
-        
-        // 6. Process Results and Render to UI
-        ui.updateLogCounters(result.successCount, result.errorCount);
-        
-        if (result.logs && result.logs.length > 0) {
-            result.logs.forEach(log => {
-                const isError = log.status === "Gagal";
-                ui.renderLogItem(log, isError);
-            });
-        } else {
-            ui.renderLogItem({ email: "Sistem", status: "Makluman", reason: "Tiada data diproses." }, false);
-        }
+    const BATCH_SIZE = 25; // Optimum size to guarantee sub-30s execution per fetch
+    const totalBatches = Math.ceil(emails.length / BATCH_SIZE);
+    
+    let cumulativeSuccess = 0;
+    let cumulativeError = 0;
 
-    } catch (error) {
-        // Handle critical network or server routing errors
-        console.error(error);
-        ui.renderLogItem({
-            email: "Ralat Pelayan / Rangkaian",
-            status: "Gagal",
-            reason: error.message || "Terdapat ralat ketika berhubung dengan pelayan Google Apps Script."
-        }, true);
-    } finally {
-        ui.setTransferLoadingState(false);
+    // 5. Asynchronous Loop Execution (Process Chunks Sequentially)
+    for (let i = 0; i < totalBatches; i++) {
+        const startIdx = i * BATCH_SIZE;
+        const endIdx = startIdx + BATCH_SIZE;
+        const emailChunk = emails.slice(startIdx, endIdx);
+        
+        // Update UI state to show batch progress
+        ui.setSystemStatus(`Memproses Pukalan ${i + 1} dari ${totalBatches}...`, 'loading');
+
+        try {
+            // Send specific chunk to GAS Backend via API Layer
+            const result = await api.executeTransfer(exactOUPath, emailChunk, globalSchoolDict);
+            
+            // Increment cumulative metrics
+            cumulativeSuccess += result.successCount;
+            cumulativeError += result.errorCount;
+            
+            // Process Results and Render to UI dynamically
+            ui.updateLogCounters(cumulativeSuccess, cumulativeError);
+            
+            if (result.logs && result.logs.length > 0) {
+                result.logs.forEach(log => {
+                    const isError = log.status === "Gagal";
+                    ui.renderLogItem(log, isError);
+                });
+            } else {
+                ui.renderLogItem({ email: `Pukalan ${i + 1}`, status: "Makluman", reason: "Tiada data log dipulangkan." }, false);
+            }
+
+        } catch (error) {
+            // Handle critical network or server routing errors per chunk
+            console.error(`Ralat pada Pukalan ${i + 1}:`, error);
+            
+            // Consider the entire chunk as failed
+            cumulativeError += emailChunk.length;
+            ui.updateLogCounters(cumulativeSuccess, cumulativeError);
+            
+            ui.renderLogItem({
+                email: `Kumpulan Emel (Pukalan ${i + 1})`,
+                status: "Gagal",
+                reason: error.message || "Ralat Pelayan / Rangkaian ketika menghubungi API."
+            }, true);
+            
+            // Continue processing the next batch to ensure maximum completion
+            continue;
+        }
     }
+
+    // 6. Finalization Output
+    ui.setTransferLoadingState(false);
+    ui.setSystemStatus('Pemindahan Selesai', 'ready');
 }
 
 /**
