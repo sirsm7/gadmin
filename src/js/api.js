@@ -50,15 +50,19 @@ async function callGASBackend(payload) {
  * @param {string} targetOU - The destination Organizational Unit path.
  * @param {Array<string>} emails - Array of clean user emails.
  * @param {Object} schoolDict - Dictionary mapping school codes to school names.
+ * @param {boolean} isReactivate - Flag to determine if suspended accounts should be reactivated.
  * @returns {Promise<Object>} Response containing execution metrics and logs.
  */
-export async function executeTransfer(targetOU, emails, schoolDict) {
+// [COMMENT SYNTAX] SURGICAL EDIT START: Added isReactivate parameter and injected it into the payload
+export async function executeTransfer(targetOU, emails, schoolDict, isReactivate = false) {
     const payload = {
         action: "transfer",
         targetOU: targetOU,
         emails: emails,
-        schoolDict: schoolDict // Disuntik ke payload untuk notifikasi e-mel
+        schoolDict: schoolDict, // Disuntik ke payload untuk notifikasi e-mel
+        reactivate: isReactivate // Disuntik ke payload untuk arahan pengaktifan semula (unsuspend)
     };
+// [COMMENT SYNTAX] SURGICAL EDIT END
 
     const response = await callGASBackend(payload);
     

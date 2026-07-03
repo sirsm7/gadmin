@@ -33,6 +33,11 @@ export function initDOM() {
     DOM.countError = document.getElementById('countError');
     DOM.logContainer = document.getElementById('logContainer');
     DOM.logPlaceholder = document.getElementById('logPlaceholder');
+
+    // [COMMENT SYNTAX] SURGICAL EDIT START: Add new DOM references for Reactivate and Reset
+    DOM.chkReactivate = document.getElementById('chkReactivate');
+    DOM.btnResetApp = document.getElementById('btnResetApp');
+    // [COMMENT SYNTAX] SURGICAL EDIT END
 }
 
 /**
@@ -114,6 +119,11 @@ export function setTransferLoadingState(isLoading) {
         DOM.ouSearchInput.disabled = true;
         DOM.btnRefreshOU.disabled = true;
         DOM.btnClearEmails.disabled = true;
+        
+        // [COMMENT SYNTAX] SURGICAL EDIT START: Disable new elements during execution
+        if(DOM.chkReactivate) DOM.chkReactivate.disabled = true;
+        if(DOM.btnResetApp) DOM.btnResetApp.disabled = true;
+        // [COMMENT SYNTAX] SURGICAL EDIT END
     } else {
         DOM.btnTransfer.disabled = false;
         DOM.iconTransfer.classList.remove('hidden');
@@ -125,6 +135,11 @@ export function setTransferLoadingState(isLoading) {
         DOM.ouSearchInput.disabled = false;
         DOM.btnRefreshOU.disabled = false;
         DOM.btnClearEmails.disabled = false;
+
+        // [COMMENT SYNTAX] SURGICAL EDIT START: Re-enable new elements
+        if(DOM.chkReactivate) DOM.chkReactivate.disabled = false;
+        if(DOM.btnResetApp) DOM.btnResetApp.disabled = false;
+        // [COMMENT SYNTAX] SURGICAL EDIT END
     }
 }
 
@@ -201,3 +216,37 @@ export function getSelectedOUText() { return DOM.ouSearchInput.value; }
 export function getOUDataListOptions() { return DOM.ouDataList.options; }
 export function clearEmailInput() { DOM.emailInput.value = ''; updateEmailCount(0); }
 export function getDOMElements() { return DOM; } // Pass references to app for event listeners
+
+// [COMMENT SYNTAX] SURGICAL EDIT START: Expose new functions for logic layer
+/**
+ * Gets the current status of the reactivate checkbox.
+ * @returns {boolean} true if checked, false otherwise.
+ */
+export function getReactivateStatus() {
+    return DOM.chkReactivate ? DOM.chkReactivate.checked : false;
+}
+
+/**
+ * Completely resets the application UI to its initial state.
+ */
+export function resetAppUI() {
+    // Clear inputs
+    clearEmailInput();
+    if (DOM.ouSearchInput) DOM.ouSearchInput.value = '';
+    if (DOM.chkReactivate) DOM.chkReactivate.checked = false;
+
+    // Reset logs and restore placeholder
+    resetLogs();
+    
+    const placeholderHTML = `
+        <div id="logPlaceholder" class="h-full flex flex-col items-center justify-center text-slate-400 space-y-2">
+            <i class="ph ph-tray text-4xl opacity-50"></i>
+            <p class="text-xs">Tiada log untuk dipaparkan. Sila mulakan proses.</p>
+        </div>
+    `;
+    DOM.logContainer.innerHTML = placeholderHTML;
+
+    // Set status back to ready
+    setSystemStatus('Sistem Sedia (Reset Berjaya)', 'ready');
+}
+// [COMMENT SYNTAX] SURGICAL EDIT END

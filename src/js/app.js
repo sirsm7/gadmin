@@ -52,6 +52,16 @@ function setupEventListeners() {
 
     // Main Transfer Execution Button
     DOM.btnTransfer.addEventListener('click', handleTransferExecution);
+
+    // [COMMENT SYNTAX] SURGICAL EDIT START: Add listener for the Reset Application Button
+    if (DOM.btnResetApp) {
+        DOM.btnResetApp.addEventListener('click', () => {
+            if (confirm("Adakah anda pasti untuk menetapkan semula sistem? Semua senarai emel dan log akan dipadamkan.")) {
+                ui.resetAppUI();
+            }
+        });
+    }
+    // [COMMENT SYNTAX] SURGICAL EDIT END
 }
 
 /**
@@ -197,9 +207,18 @@ async function handleTransferExecution() {
         }
     }
 
+    // [COMMENT SYNTAX] SURGICAL EDIT START: Extract reactivate status and update confirmation message
+    const isReactivate = ui.getReactivateStatus();
+
     // 3. Confirm execution with the user
-    const confirmMsg = `PENGESAHAN PEMINDAHAN PUKAL\n\nJumlah Pengguna: ${emails.length}\nDestinasi: ${exactOUPath}\n\nTeruskan operasi ini?`;
+    let confirmMsg = `PENGESAHAN PEMINDAHAN PUKAL\n\nJumlah Pengguna: ${emails.length}\nDestinasi: ${exactOUPath}`;
+    if (isReactivate) {
+        confirmMsg += `\nArahan Tambahan: AKTIFKAN SEMULA AKAUN (Unsuspend)`;
+    }
+    confirmMsg += `\n\nTeruskan operasi ini?`;
+    
     if (!confirm(confirmMsg)) return;
+    // [COMMENT SYNTAX] SURGICAL EDIT END
 
     // 4. Execution Initialization & Chunking Configuration
     ui.setTransferLoadingState(true);
@@ -221,8 +240,10 @@ async function handleTransferExecution() {
         ui.setSystemStatus(`Memproses Pukalan ${i + 1} dari ${totalBatches}...`, 'loading');
 
         try {
+            // [COMMENT SYNTAX] SURGICAL EDIT START: Pass isReactivate to the API layer
             // Send specific chunk to GAS Backend via API Layer
-            const result = await api.executeTransfer(exactOUPath, emailChunk, globalSchoolDict);
+            const result = await api.executeTransfer(exactOUPath, emailChunk, globalSchoolDict, isReactivate);
+            // [COMMENT SYNTAX] SURGICAL EDIT END
             
             // Increment cumulative metrics
             cumulativeSuccess += result.successCount;

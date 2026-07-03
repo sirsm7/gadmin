@@ -108,13 +108,29 @@
 
                 <!-- Execution Action -->
                 <div class="mt-6 pt-4 border-t border-slate-100">
-                    <button 
-                        id="btnTransfer" 
-                        class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                        <i id="iconTransfer" class="ph ph-paper-plane-tilt text-xl mr-2"></i>
-                        <i id="iconTransferSpin" class="ph ph-spinner-gap text-xl animate-spin mr-2 hidden"></i>
-                        <span id="btnTextTransfer">Laksanakan Pemindahan OU Pukal</span>
-                    </button>
+                    <!-- [COMMENT SYNTAX] SURGICAL EDIT START: Add Reactivate Checkbox and Reset Button -->
+                    <div class="mb-4 flex items-center bg-blue-50 p-3 rounded border border-blue-100">
+                        <input type="checkbox" id="chkReactivate" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded cursor-pointer">
+                        <label for="chkReactivate" class="ml-2 block text-sm font-medium text-blue-800 cursor-pointer">
+                            Aktifkan semula akaun yang digantung (Suspended)
+                        </label>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button 
+                            id="btnResetApp" 
+                            class="w-full sm:w-auto flex justify-center items-center py-3 px-4 border border-slate-300 rounded-md shadow-sm text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
+                            <i class="ph ph-arrow-counter-clockwise text-xl mr-2"></i>
+                            <span>Reset Paparan</span>
+                        </button>
+                        <button 
+                            id="btnTransfer" 
+                            class="w-full flex-grow flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i id="iconTransfer" class="ph ph-paper-plane-tilt text-xl mr-2"></i>
+                            <i id="iconTransferSpin" class="ph ph-spinner-gap text-xl animate-spin mr-2 hidden"></i>
+                            <span id="btnTextTransfer">Laksanakan Pemindahan OU Pukal</span>
+                        </button>
+                    </div>
+                    <!-- [COMMENT SYNTAX] SURGICAL EDIT END -->
                 </div>
             </div>
 
