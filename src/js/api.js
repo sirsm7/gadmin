@@ -44,25 +44,22 @@ async function callGASBackend(payload) {
     }
 }
 
+// [COMMENT SYNTAX] SURGICAL EDIT START: Removed isReactivate from executeTransfer and added executeUnsuspend
 /**
  * Executes the bulk OU transfer via Google Apps Script.
- * Now includes schoolDict for the backend to process email notifications correctly.
+ * Includes schoolDict for the backend to process email notifications correctly.
  * @param {string} targetOU - The destination Organizational Unit path.
  * @param {Array<string>} emails - Array of clean user emails.
  * @param {Object} schoolDict - Dictionary mapping school codes to school names.
- * @param {boolean} isReactivate - Flag to determine if suspended accounts should be reactivated.
  * @returns {Promise<Object>} Response containing execution metrics and logs.
  */
-// [COMMENT SYNTAX] SURGICAL EDIT START: Added isReactivate parameter and injected it into the payload
-export async function executeTransfer(targetOU, emails, schoolDict, isReactivate = false) {
+export async function executeTransfer(targetOU, emails, schoolDict) {
     const payload = {
         action: "transfer",
         targetOU: targetOU,
         emails: emails,
-        schoolDict: schoolDict, // Disuntik ke payload untuk notifikasi e-mel
-        reactivate: isReactivate // Disuntik ke payload untuk arahan pengaktifan semula (unsuspend)
+        schoolDict: schoolDict // Disuntik ke payload untuk notifikasi e-mel
     };
-// [COMMENT SYNTAX] SURGICAL EDIT END
 
     const response = await callGASBackend(payload);
     
@@ -72,6 +69,27 @@ export async function executeTransfer(targetOU, emails, schoolDict, isReactivate
     
     return response.data;
 }
+
+/**
+ * Executes the bulk unsuspend command via Google Apps Script without changing OU.
+ * @param {Array<string>} emails - Array of clean user emails.
+ * @returns {Promise<Object>} Response containing execution metrics and logs.
+ */
+export async function executeUnsuspend(emails) {
+    const payload = {
+        action: "unsuspend",
+        emails: emails
+    };
+
+    const response = await callGASBackend(payload);
+    
+    if (response.status === "error") {
+        throw new Error(response.message);
+    }
+    
+    return response.data;
+}
+// [COMMENT SYNTAX] SURGICAL EDIT END
 
 /**
  * Fetches fresh OUs directly from Google Admin Directory via GAS.

@@ -34,9 +34,12 @@ export function initDOM() {
     DOM.logContainer = document.getElementById('logContainer');
     DOM.logPlaceholder = document.getElementById('logPlaceholder');
 
-    // [COMMENT SYNTAX] SURGICAL EDIT START: Add new DOM references for Reactivate and Reset
-    DOM.chkReactivate = document.getElementById('chkReactivate');
+    // [COMMENT SYNTAX] SURGICAL EDIT START: Update DOM references for Unsuspend Button (removed Reactivate Checkbox)
     DOM.btnResetApp = document.getElementById('btnResetApp');
+    DOM.btnUnsuspend = document.getElementById('btnUnsuspend');
+    DOM.iconUnsuspend = document.getElementById('iconUnsuspend');
+    DOM.iconUnsuspendSpin = document.getElementById('iconUnsuspendSpin');
+    DOM.btnTextUnsuspend = document.getElementById('btnTextUnsuspend');
     // [COMMENT SYNTAX] SURGICAL EDIT END
 }
 
@@ -120,8 +123,8 @@ export function setTransferLoadingState(isLoading) {
         DOM.btnRefreshOU.disabled = true;
         DOM.btnClearEmails.disabled = true;
         
-        // [COMMENT SYNTAX] SURGICAL EDIT START: Disable new elements during execution
-        if(DOM.chkReactivate) DOM.chkReactivate.disabled = true;
+        // [COMMENT SYNTAX] SURGICAL EDIT START: Disable Unsuspend button during transfer execution
+        if(DOM.btnUnsuspend) DOM.btnUnsuspend.disabled = true;
         if(DOM.btnResetApp) DOM.btnResetApp.disabled = true;
         // [COMMENT SYNTAX] SURGICAL EDIT END
     } else {
@@ -136,12 +139,48 @@ export function setTransferLoadingState(isLoading) {
         DOM.btnRefreshOU.disabled = false;
         DOM.btnClearEmails.disabled = false;
 
-        // [COMMENT SYNTAX] SURGICAL EDIT START: Re-enable new elements
-        if(DOM.chkReactivate) DOM.chkReactivate.disabled = false;
+        // [COMMENT SYNTAX] SURGICAL EDIT START: Re-enable elements
+        if(DOM.btnUnsuspend) DOM.btnUnsuspend.disabled = false;
         if(DOM.btnResetApp) DOM.btnResetApp.disabled = false;
         // [COMMENT SYNTAX] SURGICAL EDIT END
     }
 }
+
+// [COMMENT SYNTAX] SURGICAL EDIT START: Add UI loading state for Unsuspend Action
+/**
+ * Toggles the loading state of the Unsuspend button.
+ * @param {boolean} isLoading 
+ */
+export function setUnsuspendLoadingState(isLoading) {
+    if (isLoading) {
+        if(DOM.btnUnsuspend) DOM.btnUnsuspend.disabled = true;
+        if(DOM.iconUnsuspend) DOM.iconUnsuspend.classList.add('hidden');
+        if(DOM.iconUnsuspendSpin) DOM.iconUnsuspendSpin.classList.remove('hidden');
+        if(DOM.btnTextUnsuspend) DOM.btnTextUnsuspend.textContent = "Sedang Mengaktifkan...";
+        
+        // Disable other inputs during execution
+        DOM.emailInput.disabled = true;
+        DOM.ouSearchInput.disabled = true;
+        DOM.btnRefreshOU.disabled = true;
+        DOM.btnClearEmails.disabled = true;
+        if(DOM.btnResetApp) DOM.btnResetApp.disabled = true;
+        DOM.btnTransfer.disabled = true;
+    } else {
+        if(DOM.btnUnsuspend) DOM.btnUnsuspend.disabled = false;
+        if(DOM.iconUnsuspend) DOM.iconUnsuspend.classList.remove('hidden');
+        if(DOM.iconUnsuspendSpin) DOM.iconUnsuspendSpin.classList.add('hidden');
+        if(DOM.btnTextUnsuspend) DOM.btnTextUnsuspend.textContent = "Aktifkan Akaun";
+        
+        // Re-enable inputs
+        DOM.emailInput.disabled = false;
+        DOM.ouSearchInput.disabled = false;
+        DOM.btnRefreshOU.disabled = false;
+        DOM.btnClearEmails.disabled = false;
+        if(DOM.btnResetApp) DOM.btnResetApp.disabled = false;
+        DOM.btnTransfer.disabled = false;
+    }
+}
+// [COMMENT SYNTAX] SURGICAL EDIT END
 
 /**
  * Updates the email count display based on textarea input.
@@ -217,15 +256,7 @@ export function getOUDataListOptions() { return DOM.ouDataList.options; }
 export function clearEmailInput() { DOM.emailInput.value = ''; updateEmailCount(0); }
 export function getDOMElements() { return DOM; } // Pass references to app for event listeners
 
-// [COMMENT SYNTAX] SURGICAL EDIT START: Expose new functions for logic layer
-/**
- * Gets the current status of the reactivate checkbox.
- * @returns {boolean} true if checked, false otherwise.
- */
-export function getReactivateStatus() {
-    return DOM.chkReactivate ? DOM.chkReactivate.checked : false;
-}
-
+// [COMMENT SYNTAX] SURGICAL EDIT START: Removed getReactivateStatus getter as checkbox is deleted.
 /**
  * Completely resets the application UI to its initial state.
  */
@@ -233,7 +264,6 @@ export function resetAppUI() {
     // Clear inputs
     clearEmailInput();
     if (DOM.ouSearchInput) DOM.ouSearchInput.value = '';
-    if (DOM.chkReactivate) DOM.chkReactivate.checked = false;
 
     // Reset logs and restore placeholder
     resetLogs();

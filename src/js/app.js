@@ -53,13 +53,18 @@ function setupEventListeners() {
     // Main Transfer Execution Button
     DOM.btnTransfer.addEventListener('click', handleTransferExecution);
 
-    // [COMMENT SYNTAX] SURGICAL EDIT START: Add listener for the Reset Application Button
+    // Listener for the Reset Application Button
     if (DOM.btnResetApp) {
         DOM.btnResetApp.addEventListener('click', () => {
             if (confirm("Adakah anda pasti untuk menetapkan semula sistem? Semua senarai emel dan log akan dipadamkan.")) {
                 ui.resetAppUI();
             }
         });
+    }
+
+    // [COMMENT SYNTAX] SURGICAL EDIT START: Add listener for the new Unsuspend Button
+    if (DOM.btnUnsuspend) {
+        DOM.btnUnsuspend.addEventListener('click', handleUnsuspendExecution);
     }
     // [COMMENT SYNTAX] SURGICAL EDIT END
 }
@@ -207,14 +212,9 @@ async function handleTransferExecution() {
         }
     }
 
-    // [COMMENT SYNTAX] SURGICAL EDIT START: Extract reactivate status and update confirmation message
-    const isReactivate = ui.getReactivateStatus();
-
+    // [COMMENT SYNTAX] SURGICAL EDIT START: Removed reactivate logic and restored original confirmation message
     // 3. Confirm execution with the user
     let confirmMsg = `PENGESAHAN PEMINDAHAN PUKAL\n\nJumlah Pengguna: ${emails.length}\nDestinasi: ${exactOUPath}`;
-    if (isReactivate) {
-        confirmMsg += `\nArahan Tambahan: AKTIFKAN SEMULA AKAUN (Unsuspend)`;
-    }
     confirmMsg += `\n\nTeruskan operasi ini?`;
     
     if (!confirm(confirmMsg)) return;
@@ -240,9 +240,9 @@ async function handleTransferExecution() {
         ui.setSystemStatus(`Memproses Pukalan ${i + 1} dari ${totalBatches}...`, 'loading');
 
         try {
-            // [COMMENT SYNTAX] SURGICAL EDIT START: Pass isReactivate to the API layer
+            // [COMMENT SYNTAX] SURGICAL EDIT START: Removed isReactivate parameter from payload signature
             // Send specific chunk to GAS Backend via API Layer
-            const result = await api.executeTransfer(exactOUPath, emailChunk, globalSchoolDict, isReactivate);
+            const result = await api.executeTransfer(exactOUPath, emailChunk, globalSchoolDict);
             // [COMMENT SYNTAX] SURGICAL EDIT END
             
             // Increment cumulative metrics
@@ -284,6 +284,84 @@ async function handleTransferExecution() {
     ui.setTransferLoadingState(false);
     ui.setSystemStatus('Pemindahan Selesai', 'ready');
 }
+
+// [COMMENT SYNTAX] SURGICAL EDIT START: Built independent secondary executor for Unsuspend logic
+/**
+ * Handles the execution process specifically for unsuspending users.
+ * Does not require any target OU. Implements Asynchronous Batch Chunking.
+ */
+async function handleUnsuspendExecution() {
+    // 1. Input Extraction & Validation
+    const rawEmailsText = ui.getRawEmails();
+    const emails = extractValidEmails(rawEmailsText);
+    
+    if (emails.length === 0) {
+        alert("Sila masukkan sekurang-kurangnya satu alamat emel yang sah untuk diaktifkan.");
+        return;
+    }
+
+    // 2. Confirm execution with the user
+    const confirmMsg = `PENGESAHAN PENGAKTIFAN AKAUN\n\nJumlah Pengguna: ${emails.length}\n\nSistem akan mengaktifkan semula akaun-akaun ini (unsuspend) TANPA mengubah laluan OU semasa mereka.\n\nTeruskan operasi ini?`;
+    
+    if (!confirm(confirmMsg)) return;
+
+    // 3. Execution Initialization
+    ui.setUnsuspendLoadingState(true);
+    ui.resetLogs();
+    
+    const BATCH_SIZE = 25; 
+    const totalBatches = Math.ceil(emails.length / BATCH_SIZE);
+    
+    let cumulativeSuccess = 0;
+    let cumulativeError = 0;
+
+    // 4. Asynchronous Loop Execution
+    for (let i = 0; i < totalBatches; i++) {
+        const startIdx = i * BATCH_SIZE;
+        const endIdx = startIdx + BATCH_SIZE;
+        const emailChunk = emails.slice(startIdx, endIdx);
+        
+        ui.setSystemStatus(`Mengaktifkan Pukalan ${i + 1} dari ${totalBatches}...`, 'loading');
+
+        try {
+            // Call specific Unsuspend API
+            const result = await api.executeUnsuspend(emailChunk);
+            
+            cumulativeSuccess += result.successCount;
+            cumulativeError += result.errorCount;
+            
+            ui.updateLogCounters(cumulativeSuccess, cumulativeError);
+            
+            if (result.logs && result.logs.length > 0) {
+                result.logs.forEach(log => {
+                    const isError = log.status === "Gagal";
+                    ui.renderLogItem(log, isError);
+                });
+            } else {
+                ui.renderLogItem({ email: `Pukalan ${i + 1}`, status: "Makluman", reason: "Tiada data log dipulangkan." }, false);
+            }
+
+        } catch (error) {
+            console.error(`Ralat pada Pukalan ${i + 1}:`, error);
+            
+            cumulativeError += emailChunk.length;
+            ui.updateLogCounters(cumulativeSuccess, cumulativeError);
+            
+            ui.renderLogItem({
+                email: `Kumpulan Emel (Pukalan ${i + 1})`,
+                status: "Gagal",
+                reason: error.message || "Ralat Pelayan / Rangkaian ketika menghubungi API."
+            }, true);
+            
+            continue;
+        }
+    }
+
+    // 5. Finalization Output
+    ui.setUnsuspendLoadingState(false);
+    ui.setSystemStatus('Proses Pengaktifan Selesai', 'ready');
+}
+// [COMMENT SYNTAX] SURGICAL EDIT END
 
 /**
  * Utility function to clean up the raw textarea input into a valid array of emails.
