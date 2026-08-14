@@ -14,81 +14,88 @@
     <!-- Phosphor Icons for modern minimalist icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col selection:bg-indigo-100 selection:text-indigo-900">
 
     <!-- Header Section -->
-    <header class="bg-blue-700 text-white shadow-md">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <i class="ph ph-users-three text-3xl"></i>
+    <header class="bg-gradient-to-r from-blue-700 via-indigo-700 to-indigo-800 text-white shadow-lg border-b border-indigo-900/50">
+        <div class="max-w-6xl mx-auto px-4 py-5 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
+                    <i class="ph ph-users-three text-3xl"></i>
+                </div>
                 <div>
-                    <h1 class="text-xl font-bold leading-tight">Utiliti Penukaran OU Pukal</h1>
-                    <p class="text-xs text-blue-200">Sistem Pengurusan Direktori GWS Hibrid</p>
+                    <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight leading-tight">Utiliti Penukaran OU Pukal</h1>
+                    <p class="text-xs sm:text-sm text-indigo-200 font-medium tracking-wide mt-0.5">Sistem Pengurusan Direktori GWS Hibrid</p>
                 </div>
             </div>
-            <div class="text-xs font-mono bg-blue-800 px-3 py-1 rounded-full border border-blue-600">
-                Status Sistem: <span id="systemStatusBadge" class="text-yellow-400 font-semibold">Memuatkan...</span>
+            <div class="text-[10px] sm:text-xs font-mono bg-indigo-900/60 px-3 py-1.5 rounded-full border border-indigo-500/30 flex items-center shadow-inner hidden sm:flex">
+                <span class="mr-2 text-indigo-200">Status:</span> 
+                <span id="systemStatusBadge" class="text-yellow-400 font-bold tracking-wide">Memuatkan...</span>
+            </div>
+            <!-- Mobile status badge (icon only or smaller) can go here if needed, keeping it simple for now -->
+            <div class="sm:hidden text-[10px] font-mono bg-indigo-900/60 px-2 py-1 rounded-full border border-indigo-500/30">
+                <span id="systemStatusBadge" class="text-yellow-400 font-bold tracking-wide">Memuatkan...</span>
             </div>
         </div>
     </header>
 
     <!-- Main Content Area -->
-    <main class="flex-grow max-w-6xl mx-auto w-full px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <main class="flex-grow max-w-6xl mx-auto w-full px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         <!-- Left Column: Data Input -->
-        <div class="lg:col-span-5 flex flex-col space-y-4">
+        <div class="lg:col-span-5 flex flex-col space-y-6">
             
             <!-- Instructions Box -->
-            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-md shadow-sm">
-                <h3 class="font-semibold text-blue-800 flex items-center mb-2 text-sm">
-                    <i class="ph ph-info text-lg mr-2"></i> Arahan Operasi
+            <div class="bg-sky-50/80 border-l-4 border-sky-500 p-4 rounded-r-xl shadow-sm ring-1 ring-sky-900/5">
+                <h3 class="font-bold text-sky-900 flex items-center mb-2.5 text-sm">
+                    <i class="ph-fill ph-info text-lg mr-2 text-sky-600"></i> Arahan Operasi
                 </h3>
-                <ul class="list-disc list-inside text-blue-700 text-xs space-y-1">
-                    <li>Sistem ini beroperasi secara <strong>stateless</strong> (tiada data emel disimpan).</li>
-                    <li>Tampal <em>(paste)</em> senarai emel ke dalam kotak di bawah (satu emel satu baris).</li>
-                    <li>Pilih destinasi <strong>Organizational Unit (OU)</strong> yang disasarkan.</li>
+                <ul class="list-disc list-inside text-sky-800/80 text-xs space-y-1.5 ml-1">
+                    <li>Sistem ini beroperasi secara <strong class="text-sky-900 font-semibold">stateless</strong> (tiada data disimpan).</li>
+                    <li>Tampal <em>(paste)</em> senarai emel ke dalam kotak (satu emel satu baris).</li>
+                    <li>Pilih destinasi <strong class="text-sky-900 font-semibold">Organizational Unit (OU)</strong> yang disasarkan.</li>
                 </ul>
             </div>
 
             <!-- Email Textarea -->
-            <div class="bg-white p-4 rounded-lg shadow-sm border border-slate-200 flex-grow flex flex-col">
-                <div class="flex justify-between items-center mb-2">
-                    <label for="emailInput" class="block text-sm font-semibold text-slate-700">
-                        Senarai Emel Pengguna
+            <div class="bg-white p-5 rounded-xl shadow-md border border-slate-200/70 flex-grow flex flex-col transition-shadow hover:shadow-lg">
+                <div class="flex justify-between items-end mb-3">
+                    <label for="emailInput" class="block text-sm font-bold text-slate-800 flex items-center">
+                        <i class="ph ph-envelope-simple text-lg mr-2 text-slate-400"></i> Senarai Emel Pengguna
                     </label>
-                    <span class="text-xs text-slate-500 font-mono" id="emailCountDisplay">0 baris</span>
+                    <span class="text-xs bg-slate-100 text-slate-600 font-mono px-2 py-1 rounded-md border border-slate-200" id="emailCountDisplay">0 baris</span>
                 </div>
                 <textarea 
                     id="emailInput" 
-                    class="w-full flex-grow border border-slate-300 rounded-md p-3 text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow resize-none min-h-[300px]" 
+                    class="w-full flex-grow border border-slate-300 rounded-lg p-4 text-sm font-mono focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all resize-none min-h-[300px] bg-slate-50/50 hover:bg-white" 
                     placeholder="pengguna1@moe-dl.edu.my&#10;pengguna2@moe-dl.edu.my&#10;..."></textarea>
-                <div class="mt-3 flex justify-end">
-                    <button id="btnClearEmails" class="text-xs text-red-600 hover:text-red-800 hover:bg-red-50 px-3 py-1.5 rounded transition-colors flex items-center">
-                        <i class="ph ph-trash mr-1"></i> Kosongkan Senarai
+                <div class="mt-4 flex justify-end">
+                    <button id="btnClearEmails" class="text-xs font-semibold text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-3 py-2 rounded-lg transition-all flex items-center border border-transparent hover:border-rose-100">
+                        <i class="ph ph-trash mr-1.5 text-lg"></i> Kosongkan Senarai
                     </button>
                 </div>
             </div>
         </div>
 
         <!-- Right Column: Controls & Execution Logs -->
-        <div class="lg:col-span-7 flex flex-col space-y-4">
+        <div class="lg:col-span-7 flex flex-col space-y-6">
             
             <!-- Control Panel -->
-            <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
-                <label for="ouSearchInput" class="block text-sm font-semibold text-slate-700 mb-2">
-                    Cari & Pilih Destinasi OU
+            <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200/70 transition-shadow hover:shadow-lg">
+                <label for="ouSearchInput" class="block text-sm font-bold text-slate-800 mb-3 flex items-center">
+                    <i class="ph ph-folder-notch text-lg mr-2 text-slate-400"></i> Cari & Pilih Destinasi OU
                 </label>
-                <div class="flex items-center space-x-2">
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
                     <div class="relative flex-grow">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="ph ph-magnifying-glass text-slate-400"></i>
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                            <i class="ph ph-magnifying-glass text-slate-400 text-lg"></i>
                         </div>
                         <input 
                             type="text" 
                             id="ouSearchInput" 
                             list="ouDataList" 
-                            placeholder="Sila tunggu, sedang menarik data pangkalan..." 
-                            class="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-md leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-shadow truncate"
+                            placeholder="Sila tunggu, sedang menarik data..." 
+                            class="block w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg leading-5 bg-slate-50/50 hover:bg-white placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 sm:text-sm transition-all truncate"
                             disabled>
                         <datalist id="ouDataList">
                             <!-- Options dynamically injected by JS from Supabase Cache -->
@@ -98,62 +105,70 @@
                     <!-- Sync Action -->
                     <button 
                         id="btnRefreshOU" 
-                        class="inline-flex items-center px-4 py-2 border border-slate-300 shadow-sm text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Tarik semula struktur OU terus dari Google Admin ke Cache Supabase">
-                        <i id="iconRefresh" class="ph ph-arrows-clockwise text-lg"></i>
+                        class="inline-flex justify-center items-center px-4 py-2.5 border border-slate-300 shadow-sm text-sm font-semibold rounded-lg text-slate-700 bg-white hover:bg-slate-50 hover:text-indigo-600 focus:outline-none focus:ring-4 focus:ring-slate-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+                        title="Tarik semula struktur OU dari Admin ke Cache">
+                        <i id="iconRefresh" class="ph ph-arrows-clockwise text-lg group-hover:rotate-180 transition-transform duration-500"></i>
                         <i id="iconRefreshSpin" class="ph ph-spinner-gap text-lg animate-spin hidden"></i>
-                        <span class="ml-2 hidden sm:inline">Segerak Admin</span>
+                        <span class="ml-2">Segerak Admin</span>
                     </button>
                 </div>
 
-                <!-- Execution Action -->
-                <div class="mt-6 pt-4 border-t border-slate-100">
-                    <!-- [COMMENT SYNTAX] SURGICAL EDIT START: Remove checkbox, add Unsuspend button -->
+                <!-- Execution Actions -->
+                <div class="mt-6 pt-5 border-t border-slate-100">
                     <div class="flex flex-col sm:flex-row gap-3">
                         <button 
                             id="btnResetApp" 
-                            class="w-full sm:w-auto flex justify-center items-center py-3 px-4 border border-slate-300 rounded-md shadow-sm text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors">
-                            <i class="ph ph-arrow-counter-clockwise text-xl mr-2"></i>
+                            class="w-full sm:w-auto flex justify-center items-center py-3 px-5 border border-slate-300 rounded-lg shadow-sm text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-500/20 transition-all group">
+                            <i class="ph ph-arrow-counter-clockwise text-xl mr-2 text-slate-500 group-hover:-rotate-90 transition-transform duration-300"></i>
                             <span>Reset Paparan</span>
                         </button>
+                        
                         <button 
                             id="btnUnsuspend" 
-                            class="w-full sm:w-auto flex justify-center items-center py-3 px-4 border border-green-600 rounded-md shadow-sm text-sm font-bold text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            title="Aktifkan semula senarai akaun (Unsuspend) tanpa menukar OU">
-                            <i id="iconUnsuspend" class="ph ph-user-check text-xl mr-2"></i>
+                            class="w-full sm:w-auto flex justify-center items-center py-3 px-5 border border-emerald-600 rounded-lg shadow-sm text-sm font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-emerald-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
+                            title="Aktifkan semula senarai akaun (Unsuspend)">
+                            <i id="iconUnsuspend" class="ph ph-user-check text-xl mr-2 group-hover:scale-110 transition-transform duration-200"></i>
                             <i id="iconUnsuspendSpin" class="ph ph-spinner-gap text-xl animate-spin mr-2 hidden"></i>
                             <span id="btnTextUnsuspend">Aktifkan Akaun</span>
                         </button>
+                        
                         <button 
                             id="btnTransfer" 
-                            class="w-full flex-grow flex justify-center items-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                            <i id="iconTransfer" class="ph ph-paper-plane-tilt text-xl mr-2"></i>
+                            class="w-full flex-grow flex justify-center items-center py-3 px-5 border border-transparent rounded-lg shadow-md text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500/30 transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none">
+                            <i id="iconTransfer" class="ph-fill ph-paper-plane-tilt text-xl mr-2"></i>
                             <i id="iconTransferSpin" class="ph ph-spinner-gap text-xl animate-spin mr-2 hidden"></i>
-                            <span id="btnTextTransfer">Laksanakan Pemindahan OU Pukal</span>
+                            <span id="btnTextTransfer">Laksanakan Pukal</span>
                         </button>
                     </div>
-                    <!-- [COMMENT SYNTAX] SURGICAL EDIT END -->
                 </div>
             </div>
 
             <!-- Execution Logs Panel -->
-            <div class="bg-white p-5 rounded-lg shadow-sm border border-slate-200 flex-grow flex flex-col min-h-[350px]">
-                <div class="flex justify-between items-end border-b border-slate-100 pb-3 mb-3">
+            <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200/70 flex-grow flex flex-col min-h-[350px] transition-shadow hover:shadow-lg">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-4 mb-4">
                     <h2 class="text-sm font-bold text-slate-800 flex items-center">
-                        <i class="ph ph-terminal-window text-lg mr-2 text-slate-500"></i> Log Keputusan
+                        <i class="ph-fill ph-terminal-window text-lg mr-2 text-slate-400"></i> Log Keputusan
                     </h2>
-                    <div class="text-xs font-mono bg-slate-100 px-3 py-1 rounded">
-                        <span id="countSuccess" class="text-green-600 font-bold mr-1">0</span> Berjaya 
-                        <span class="text-slate-300 mx-2">|</span> 
-                        <span id="countError" class="text-red-600 font-bold mr-1">0</span> Gagal
+                    <div class="text-xs font-mono bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 flex items-center shadow-inner">
+                        <div class="flex items-center px-2">
+                            <span id="countSuccess" class="text-emerald-600 font-bold text-sm mr-1">0</span> 
+                            <span class="text-slate-500">Berjaya</span>
+                        </div>
+                        <div class="h-4 w-px bg-slate-300 mx-1"></div>
+                        <div class="flex items-center px-2">
+                            <span id="countError" class="text-rose-600 font-bold text-sm mr-1">0</span> 
+                            <span class="text-slate-500">Gagal</span>
+                        </div>
                     </div>
                 </div>
                 
-                <div id="logContainer" class="flex-grow overflow-y-auto space-y-2 pr-2 text-sm custom-scrollbar">
+                <div id="logContainer" class="flex-grow overflow-y-auto space-y-2 pr-2 text-sm custom-scrollbar bg-slate-50/50 rounded-lg p-2 border border-slate-100/50">
                     <!-- Placeholder State -->
-                    <div id="logPlaceholder" class="h-full flex flex-col items-center justify-center text-slate-400 space-y-2">
-                        <i class="ph ph-tray text-4xl opacity-50"></i>
-                        <p class="text-xs">Tiada log untuk dipaparkan. Sila mulakan proses.</p>
+                    <div id="logPlaceholder" class="h-full flex flex-col items-center justify-center text-slate-400 space-y-3">
+                        <div class="bg-slate-100 p-4 rounded-full">
+                            <i class="ph ph-tray text-3xl text-slate-300"></i>
+                        </div>
+                        <p class="text-xs font-medium">Tiada log untuk dipaparkan. Sila mulakan proses.</p>
                     </div>
                     <!-- Logs dynamically injected here -->
                 </div>
